@@ -6,24 +6,22 @@ public class ZombieSpawner : MonoBehaviour
     [Header("Requirements")] 
     [SerializeField] private GameObject zombiePrefab;
     [SerializeField] private Transform player;
-
-    [Header("Parameters")] 
-    [Range(1, 20)]
-    [SerializeField] private int quantity;
+    
     [Range(1, 20)]
     [SerializeField] private float safeRage;
     //==============================================
-    void Start()
+
+    public void SpawnZombies(int n)
     {
         GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("SpawnPoint");
 
-        for (int i = 0; i < quantity; i++)
+        for (int i = 0; i < n; i++)
         {
-            spawnZombie(spawnPoints);
+            SpawnZombie(spawnPoints);
         }
     }
 
-    private void spawnZombie(GameObject[] spawnPoints)
+    private void SpawnZombie(GameObject[] spawnPoints)
     {
         bool findingSpawnPoint = true;
 

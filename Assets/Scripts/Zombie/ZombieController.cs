@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -9,16 +10,20 @@ public class ZombieController : MonoBehaviour
     //=========== UNITY INSPECTOR ==============
     [Header("Requirements")] 
     [SerializeField] private ScoreManager score;
+    //[SerializeField] private RoundManager manager;
     [Header("Parameters")]
     [Range(10f, 50f)] 
     [SerializeField] private float detectionRadius;
+    [Range(0f, 10f)] 
+    [SerializeField] private float attackRange;
     //==========================================
     
     
     private NavMeshAgent agent;
     private GameObject closestSurvivor;
-    private enum State { HUNTING, IDLE, DEAD }
+    private enum State { HUNTING, IDLE, DEAD, ATTACKING }
     private State currentState;
+    private bool attacking; 
 
     private int lives = 3;
     void Start()
@@ -26,7 +31,8 @@ public class ZombieController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         currentState = State.IDLE;
 
-        score = GameObject.Find("GameManager").GetComponent<ScoreManager>();
+        score = GameObject.Find("gameManager").GetComponent<ScoreManager>();
+        //manager = GameObject.Find("gameManager").GetComponent<RoundManager>();
     }
 
     // Update is called once per frame
@@ -40,6 +46,9 @@ public class ZombieController : MonoBehaviour
                 break;
             case State.HUNTING :
                 Hunt();
+                break;
+            case State.ATTACKING:
+                Attack();
                 break;
         }
     }
@@ -68,6 +77,8 @@ public class ZombieController : MonoBehaviour
                 break;
             case State.HUNTING:
                 break;
+            case State.ATTACKING:
+                break;
         }
         
         //note: Each case in this switch case should execute the start function of each state
@@ -77,11 +88,12 @@ public class ZombieController : MonoBehaviour
                 break;
             case State.HUNTING:
                 break;
-            
             case State.DEAD:
-                Debug.Log("hello there");
                 Destroy(this.gameObject);
+                //manager.CheckForRemainingZombies();
                 return;
+            case State.ATTACKING:
+                break;
         }
 
         this.currentState = nextState;
@@ -118,6 +130,12 @@ public class ZombieController : MonoBehaviour
             ChangeState(State.IDLE);
             return;
         }
+        
+        if (Vector3.Distance(this.closestSurvivor.transform.position, this.transform.position) < attackRange)
+        {
+            ChangeState(State.ATTACKING);
+            return;
+        }
 
         if (Vector3.Distance(this.closestSurvivor.transform.position, this.transform.position) > detectionRadius)
         {
@@ -126,6 +144,24 @@ public class ZombieController : MonoBehaviour
         }
         
         Pursuit(this.closestSurvivor);
+    }
+
+    private void Attack()
+    {
+        if (attacking) return;
+        Debug.Log("Attack");
+        StartCoroutine(AttackMovement());
+    }
+
+    IEnumerator AttackMovement()
+    {
+        attacking = true;
+        Debug.Log(this.closestSurvivor.GetComponent<HealthManager>());
+        this.closestSurvivor.GetComponent<HealthManager>().Damage(10);
+        yield return new WaitForSeconds(2);
+
+        attacking = false;
+        currentState = State.HUNTING;
     }
     
     //=========================================================================================
