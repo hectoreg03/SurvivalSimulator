@@ -35,7 +35,7 @@ public class Bullet : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
-
+        
         if (other.gameObject.CompareTag("Zombie"))
         {
             try
@@ -46,9 +46,12 @@ public class Bullet : MonoBehaviour
             {
                 Debug.Log("Missing Zombie Controller");
             }
+            finally
+            {
+                Destroy(this.gameObject);
+            }
         }
         else if (other.gameObject.CompareTag("Survivor") || other.gameObject.CompareTag("Bullet")) return;
-        
-        Destroy(this.gameObject);
+        else Destroy(this.gameObject);
     }
 }

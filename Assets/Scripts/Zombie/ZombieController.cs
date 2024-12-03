@@ -7,6 +7,8 @@ using Random = UnityEngine.Random;
 public class ZombieController : MonoBehaviour
 {
     //=========== UNITY INSPECTOR ==============
+    [Header("Requirements")] 
+    [SerializeField] private ScoreManager score;
     [Header("Parameters")]
     [Range(10f, 50f)] 
     [SerializeField] private float detectionRadius;
@@ -24,6 +26,7 @@ public class ZombieController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         currentState = State.IDLE;
 
+        score = GameObject.Find("GameManager").GetComponent<ScoreManager>();
     }
 
     // Update is called once per frame
@@ -76,8 +79,9 @@ public class ZombieController : MonoBehaviour
                 break;
             
             case State.DEAD:
+                Debug.Log("hello there");
                 Destroy(this.gameObject);
-                break;
+                return;
         }
 
         this.currentState = nextState;
@@ -196,9 +200,6 @@ public class ZombieController : MonoBehaviour
         Vector3 targetlocal = wanderTarget + new Vector3(0, 0, wanderDistance);
         Vector3 targetWorld = this.transform.InverseTransformVector(targetlocal);
         
-        Debug.Log(targetWorld);
-        Debug.Log(transform.position);
-
         Seek(targetWorld);
 
     }
@@ -244,7 +245,11 @@ public class ZombieController : MonoBehaviour
     public void Damage(int n = 1)
     {
         this.lives -= n;
-        if(this.lives < 1) ChangeState(State.DEAD);
+        if (this.lives < 1)
+        {
+            score.AddToScore(50);
+            ChangeState(State.DEAD);
+        }
     }
 
 
